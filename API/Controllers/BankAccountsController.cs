@@ -2,6 +2,7 @@
 using Application.BankAccounts.Dtos;
 using Domain.Models.Common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -31,8 +32,9 @@ namespace API.Controllers
         //    return Ok(result);
         //}
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<OperationResult<BankAccountDtoResponse>>> Get(Guid id)
+        public async Task<ActionResult<OperationResult<BankAccountDtoResponse>>> GetUserBankAccount(Guid id)
         {
             // Dummy return for now
             return Ok(OperationResult<BankAccountDtoResponse>.Success(new BankAccountDtoResponse
@@ -51,7 +53,7 @@ namespace API.Controllers
         public async Task<ActionResult<OperationResult<BankAccountDtoResponse>>> Create(CreateBankAccountDto dto)
         {
             var result = await _mediator.Send(new CreateBankAccountCommand(dto));
-            return result.IsSuccess ? CreatedAtAction(nameof(Get), new { id = result.Data?.Id }, result) : BadRequest(result);
+            return result.IsSuccess ? CreatedAtAction(nameof(GetUserBankAccount), new { id = result.Data?.Id }, result) : BadRequest(result);
         }
 
         //[HttpPut("{id:guid}")]

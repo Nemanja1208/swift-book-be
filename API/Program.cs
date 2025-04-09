@@ -16,6 +16,9 @@ namespace API
             builder.Services.AddApplication();
             builder.Services.AddInfrastructure(builder.Configuration);
 
+            builder.Services.AddJwtAuthentication(builder.Configuration);
+            builder.Services.AddSwaggerWithJwtAuth();
+
             builder.Services.AddControllers();
             builder.Services.AddCustomValidationResponse();
             builder.Services.AddEndpointsApiExplorer();
@@ -37,8 +40,9 @@ namespace API
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseAuthentication();
 
+            app.UseAuthorization();
 
             app.MapControllers();
 
