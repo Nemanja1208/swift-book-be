@@ -1,9 +1,11 @@
 ﻿using Application.BankAccounts.Interfaces;
 using Application.Common.Interfaces;
 using Infrastructure.Database;
+using Infrastructure.Interceptors;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.BankAccounts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,8 +15,17 @@ namespace Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            services.AddSingleton<SaveChangesInterceptor, LogSaveChangesInterceptor>();
+
+            services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+            {
+                var interceptor = serviceProvider.GetRequiredService<SaveChangesInterceptor>();
+
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+
+                options.AddInterceptors(interceptor);
+            });
+
 
             // Register generic repository
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
