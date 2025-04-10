@@ -1,4 +1,6 @@
-﻿namespace Domain.Models.Users
+﻿using Domain.Models.Accounts;
+
+namespace Domain.Models.Users
 {
     public class User
     {
@@ -9,5 +11,6 @@
         public byte[] PasswordSalt { get; set; } = [];
 
         public List<UserRole> Roles { get; set; } = new();
+        public List<BankAccount> BankAccounts { get; set; } = new();
     }
 }

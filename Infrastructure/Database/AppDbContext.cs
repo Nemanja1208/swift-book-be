@@ -7,7 +7,9 @@ namespace Infrastructure.Database
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions options) : base(options)
+        {
+        }
 
         public DbSet<User> Users => Set<User>();
         public DbSet<Role> Roles => Set<Role>();
@@ -32,6 +34,11 @@ namespace Infrastructure.Database
                 .HasOne(ur => ur.Role)
                 .WithMany(r => r.Users)
                 .HasForeignKey(ur => ur.RoleId);
+
+            modelBuilder.Entity<BankAccount>()
+                .HasOne(b => b.User)
+                .WithMany(u => u.BankAccounts)
+                .HasForeignKey(b => b.UserId);
         }
 
     }

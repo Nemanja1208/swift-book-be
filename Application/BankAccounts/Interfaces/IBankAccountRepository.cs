@@ -5,6 +5,6 @@ namespace Application.BankAccounts.Interfaces
 {
     public interface IBankAccountRepository : IGenericRepository<BankAccount>
     {
-        // Add any custom methods like GetByAccountNumber, etc.
+        Task<IEnumerable<BankAccount>> GetByUserIdAsync(Guid userId);
     }
 }

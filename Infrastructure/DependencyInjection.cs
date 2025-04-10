@@ -2,6 +2,7 @@
 using Application.Common.Interfaces;
 using Infrastructure.Configuration;
 using Infrastructure.Database;
+using Infrastructure.Database.Seeding;
 using Infrastructure.Interceptors;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.BankAccounts;
@@ -40,6 +41,17 @@ namespace Infrastructure
 
             // Register feature-specific repositories
             services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+
+            // Seeding
+            using var provider = services.BuildServiceProvider();
+            using var scope = provider.CreateScope();
+
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            DataSeeder.SeedAsync(db).GetAwaiter().GetResult(); // ✅ sync-safe
+
+
+            services.AddHttpContextAccessor();
+            services.AddScoped<IUserContextService, UserContextService>();
 
             return services;
         }

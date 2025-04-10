@@ -1,19 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Application.BankAccounts.Dtos
+﻿namespace Application.BankAccounts.Dtos
 {
     public class CreateBankAccountDto
     {
-        [Required] // Use data annotation if you want to trigger the exception behavior for model binding in controller
         public string OwnerName { get; set; } = string.Empty;
         public string Currency { get; set; } = "USD";
+        public decimal? InitialBalance { get; set; } // Optional — map to Balance
+        public bool IsActive { get; set; } = true; // Optional toggle
     }
+
 
     public class UpdateBankAccountDto
     {
-
         public string OwnerName { get; set; } = string.Empty;
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
+        public string Currency { get; set; } = "USD";
+        public decimal Balance { get; set; }
     }
 
     public class BankAccountDtoResponse

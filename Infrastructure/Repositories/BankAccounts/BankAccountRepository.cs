@@ -1,6 +1,7 @@
 ﻿using Application.BankAccounts.Interfaces;
 using Domain.Models.Accounts;
 using Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.BankAccounts
 {
@@ -8,6 +9,11 @@ namespace Infrastructure.Repositories.BankAccounts
     {
         public BankAccountRepository(AppDbContext context) : base(context) { }
 
-        // Add any specific queries if needed later
+        public async Task<IEnumerable<BankAccount>> GetByUserIdAsync(Guid userId)
+        {
+            return await _dbSet
+                .Where(b => b.UserId == userId)
+                .ToListAsync();
+        }
     }
 }

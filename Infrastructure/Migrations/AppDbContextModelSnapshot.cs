@@ -49,7 +49,12 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("BankAccounts");
                 });
@@ -137,6 +142,17 @@ namespace Infrastructure.Migrations
                     b.ToTable("UserRoles");
                 });
 
+            modelBuilder.Entity("Domain.Models.Accounts.BankAccount", b =>
+                {
+                    b.HasOne("Domain.Models.Users.User", "User")
+                        .WithMany("BankAccounts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Models.Users.UserRole", b =>
                 {
                     b.HasOne("Domain.Models.Users.Role", "Role")
@@ -163,6 +179,8 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Users.User", b =>
                 {
+                    b.Navigation("BankAccounts");
+
                     b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618

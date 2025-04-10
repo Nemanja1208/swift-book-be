@@ -2,8 +2,9 @@
 using Domain.Models.Common;
 using MediatR;
 
-namespace Application.BankAccounts.Commands.CreateBankAccount
+namespace Application.BankAccounts.Commands.UpdateBankAccount
 {
-    public record CreateBankAccountCommand(CreateBankAccountDto Dto)
+    public record UpdateBankAccountCommand(Guid Id, UpdateBankAccountDto Dto)
     : IRequest<OperationResult<BankAccountDtoResponse>>;
+
 }

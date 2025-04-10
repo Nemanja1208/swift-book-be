@@ -1,4 +1,6 @@
-﻿namespace Domain.Models.Accounts
+﻿using Domain.Models.Users;
+
+namespace Domain.Models.Accounts
 {
     public class BankAccount
     {
@@ -9,5 +11,9 @@
         public string Currency { get; set; } = "USD";
         public DateTime OpenedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
+
+        // ✅ Relationship to User
+        public Guid UserId { get; set; }
+        public User User { get; set; } = null!;
     }
 }
