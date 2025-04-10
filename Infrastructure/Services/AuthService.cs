@@ -32,12 +32,16 @@ public class AuthService : IAuthService
 
         CreatePasswordHash(dto.Password, out byte[] hash, out byte[] salt);
 
+        var refresh = GenerateRefreshToken();
+
         var user = new User
         {
             Username = dto.Username,
             Email = dto.Email,
             PasswordHash = hash,
-            PasswordSalt = salt
+            PasswordSalt = salt,
+            RefreshToken = refresh.Token,
+            RefreshTokenExpiresAt = refresh.ExpiresAt
         };
 
         // Assign default role
@@ -53,6 +57,7 @@ public class AuthService : IAuthService
         return OperationResult<AuthResponseDto>.Success(new AuthResponseDto
         {
             Token = token,
+            RefreshToken = user.RefreshToken,
             User = MapUser(user)
         });
     }
@@ -68,9 +73,42 @@ public class AuthService : IAuthService
 
         var token = GenerateJwt(user);
 
+        var refresh = GenerateRefreshToken();
+        user.RefreshToken = refresh.Token;
+        user.RefreshTokenExpiresAt = refresh.ExpiresAt;
+
+        await _context.SaveChangesAsync();
+
         return OperationResult<AuthResponseDto>.Success(new AuthResponseDto
         {
             Token = token,
+            RefreshToken = user.RefreshToken,
+            User = MapUser(user)
+        });
+    }
+
+    public async Task<OperationResult<AuthResponseDto>> RefreshTokenAsync(RefreshTokenRequest dto)
+    {
+        var user = await _context.Users
+            .Include(u => u.Roles).ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(u => u.RefreshToken == dto.RefreshToken);
+
+        if (user is null || user.RefreshTokenExpiresAt < DateTime.UtcNow)
+            return OperationResult<AuthResponseDto>.Failure("Invalid or expired refresh token.");
+
+        // ✅ Generate new tokens
+        var token = GenerateJwt(user);
+        var newRefresh = GenerateRefreshToken();
+
+        user.RefreshToken = newRefresh.Token;
+        user.RefreshTokenExpiresAt = newRefresh.ExpiresAt;
+
+        await _context.SaveChangesAsync();
+
+        return OperationResult<AuthResponseDto>.Success(new AuthResponseDto
+        {
+            Token = token,
+            RefreshToken = user.RefreshToken,
             User = MapUser(user)
         });
     }
@@ -123,5 +161,15 @@ public class AuthService : IAuthService
             Email = user.Email,
             Roles = user.Roles.Select(r => r.Role.Name).ToList()
         };
+    }
+
+    private (string Token, DateTime ExpiresAt) GenerateRefreshToken()
+    {
+        var randomBytes = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        var token = Convert.ToBase64String(randomBytes);
+
+        return (token, DateTime.UtcNow.AddDays(7)); // expires in 7 days
     }
 }

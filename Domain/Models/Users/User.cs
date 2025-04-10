@@ -10,6 +10,9 @@ namespace Domain.Models.Users
         public byte[] PasswordHash { get; set; } = [];
         public byte[] PasswordSalt { get; set; } = [];
 
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiresAt { get; set; }
+
         public List<UserRole> Roles { get; set; } = new();
         public List<BankAccount> BankAccounts { get; set; } = new();
     }

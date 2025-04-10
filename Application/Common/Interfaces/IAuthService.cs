@@ -7,5 +7,6 @@ namespace Application.Common.Interfaces
     {
         Task<OperationResult<AuthResponseDto>> RegisterAsync(RegisterUserDto dto);
         Task<OperationResult<AuthResponseDto>> LoginAsync(LoginUserDto dto);
+        Task<OperationResult<AuthResponseDto>> RefreshTokenAsync(RefreshTokenRequest dto);
     }
 }
