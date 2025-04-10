@@ -17,63 +17,57 @@ namespace API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<OperationResult<AuthResponseDto>>> Register(RegisterUserDto dto)
+        public async Task<ActionResult<OperationResult<AuthResponseDto>>> Register([FromBody] RegisterUserDto dto)
         {
             var result = await _authService.RegisterAsync(dto);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            SetRefreshTokenCookie(result.Data!.RefreshToken);
+            return Ok(result);
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
+        public async Task<ActionResult<OperationResult<AuthResponseDto>>> Login([FromBody] LoginUserDto dto)
         {
             var result = await _authService.LoginAsync(dto);
+
             if (!result.IsSuccess)
                 return Unauthorized(result);
 
-            var refreshToken = result.Data!.RefreshToken;
+            SetRefreshTokenCookie(result.Data!.RefreshToken);
+            return Ok(result);
+        }
 
+        [HttpPost("refresh")]
+        public async Task<ActionResult<OperationResult<AuthResponseDto>>> Refresh()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return Unauthorized(OperationResult<AuthResponseDto>.Failure("Missing refresh token."));
+
+            var result = await _authService.RefreshTokenAsync(new RefreshTokenRequest
+            {
+                RefreshToken = refreshToken
+            });
+
+            if (!result.IsSuccess)
+                return Unauthorized(result);
+
+            SetRefreshTokenCookie(result.Data!.RefreshToken);
+            return Ok(result);
+        }
+
+        private void SetRefreshTokenCookie(string refreshToken)
+        {
             Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.AddDays(7)
-            });
-
-            return Ok(new
-            {
-                token = result.Data.Token,
-                user = result.Data.User
-            });
-        }
-
-        [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh()
-        {
-            var refreshToken = Request.Cookies["refreshToken"];
-
-            var result = await _authService.RefreshTokenAsync(new RefreshTokenRequest
-            {
-                RefreshToken = refreshToken!
-            });
-
-            if (!result.IsSuccess)
-                return Unauthorized(result);
-
-            // Renew cookie
-            var newRefresh = result.Data!.RefreshToken;
-            Response.Cookies.Append("refreshToken", newRefresh, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(7)
-            });
-
-            return Ok(new
-            {
-                token = result.Data.Token,
-                user = result.Data.User
             });
         }
     }
