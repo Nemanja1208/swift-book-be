@@ -25,7 +25,7 @@ namespace Infrastructure
 
             var connectionString = env.IsDevelopment()
             ? configuration.GetConnectionString("DefaultConnection")
-            : configuration.GetConnectionString("AZURE_SQL_DB_CONNECTION_STRING");
+            : configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
 
 
             services.AddScoped<IAuthService, AuthService>();
