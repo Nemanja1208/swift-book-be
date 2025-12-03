@@ -22,8 +22,24 @@ namespace Infrastructure
                 configuration.GetSection("JwtSettings")
             );
 
-            var connectionString = configuration.GetConnectionString("NBI_TEST_DB") ?? configuration.GetConnectionString("DefaultConnection");
+            string connectionString;
 
+            if (env.IsDevelopment())
+            {
+                // Local DB from appsettings.Development.json
+                connectionString = configuration.GetConnectionString("DefaultConnection")!;
+            }
+            else
+            {
+                // Azure DB from App Settings (env var)
+                connectionString = configuration["AZURE_SQL_CONNECTIONSTRING"]!;
+            }
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    $"Database connection string not configured for environment '{env.EnvironmentName}'");
+            }
 
 
             services.AddScoped<IAuthService, AuthService>();
