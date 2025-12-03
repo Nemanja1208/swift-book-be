@@ -22,12 +22,24 @@ namespace Infrastructure
                 configuration.GetSection("JwtSettings")
             );
 
-            var connectionString = configuration.GetConnectionString("SQLAZURECONNSTR_AZURE_SQL_CONNECTIONSTRING")
-            ?? configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException(
-                "No database connection string found. " +
-                "Please set 'AZURE_SQL_CONNECTIONSTRING' in Azure App Service Connection Strings, " +
-                "or 'DefaultConnection' in appsettings.json.");
+            string connectionString;
+
+            if (env.IsDevelopment())
+            {
+                // local DB from appsettings.Development.json
+                connectionString = configuration.GetConnectionString("DefaultConnection")!;
+            }
+            else
+            {
+                // prod DB from App Settings env var 
+                connectionString = configuration["AZURE_SQL_CONNECTIONSTRING"]!;
+            }
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    $"Database connection string not configured for environment '{env.EnvironmentName}'");
+            }
 
 
             services.AddScoped<IAuthService, AuthService>();
