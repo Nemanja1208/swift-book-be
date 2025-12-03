@@ -22,7 +22,7 @@ namespace Infrastructure
                 configuration.GetSection("JwtSettings")
             );
 
-            var connectionString = configuration.GetConnectionString("SQLAZURECONNSTR_NBI_TEST_DB") ?? configuration.GetConnectionString("DefaultConnection");
+            var connectionString = configuration.GetConnectionString("NBI_TEST_DB") ?? configuration.GetConnectionString("DefaultConnection");
 
 
 
