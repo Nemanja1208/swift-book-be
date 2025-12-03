@@ -22,6 +22,12 @@ namespace Infrastructure
                 configuration.GetSection("JwtSettings")
             );
 
+            var connectionString =
+            configuration["AZURE_SQL_DB_CONNECTION_STRING"]
+            ?? configuration.GetConnectionString("DefaultConnection") // optional fallback
+            ?? throw new InvalidOperationException("Database connection string not configured");
+
+
             services.AddScoped<IAuthService, AuthService>();
 
             services.AddSingleton<SaveChangesInterceptor, LogSaveChangesInterceptor>();
@@ -30,7 +36,7 @@ namespace Infrastructure
             {
                 var interceptor = serviceProvider.GetRequiredService<SaveChangesInterceptor>();
 
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+                options.UseSqlServer(connectionString);
 
                 options.AddInterceptors(interceptor);
             });
