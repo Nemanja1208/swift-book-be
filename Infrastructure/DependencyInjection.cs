@@ -32,7 +32,7 @@ namespace Infrastructure
             else
             {
                 // prod DB from App Settings env var 
-                connectionString = configuration["AZURE_SQL_CONNECTIONSTRING"]!;
+                connectionString = configuration.GetConnectionString("SQLAZURECONNSTR_NEMOSTRING")!;
             }
 
             if (string.IsNullOrWhiteSpace(connectionString))
