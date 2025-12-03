@@ -22,9 +22,12 @@ namespace Infrastructure
                 configuration.GetSection("JwtSettings")
             );
 
-            var connectionString = env.IsDevelopment()
-            ? configuration.GetConnectionString("DefaultConnection")
-            : configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
+            var connectionString = configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException(
+                "No database connection string found. " +
+                "Please set 'AZURE_SQL_CONNECTIONSTRING' in Azure App Service Connection Strings, " +
+                "or 'DefaultConnection' in appsettings.json.");
 
 
             services.AddScoped<IAuthService, AuthService>();
