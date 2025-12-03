@@ -1,8 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using Application.Auth.Dtos;
+﻿using Application.Auth.Dtos;
 using Application.Common.Interfaces;
 using Domain.Models.Common;
 using Domain.Models.Users;
@@ -11,6 +7,10 @@ using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Infrastructure.Services;
 
@@ -66,7 +66,7 @@ public class AuthService : IAuthService
     {
         var user = await _context.Users
             .Include(u => u.Roles).ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(u => u.Username == dto.Username);
+            .FirstOrDefaultAsync(u => u.Email == dto.Username);
 
         if (user is null || !VerifyPassword(dto.Password, user.PasswordHash, user.PasswordSalt))
             return OperationResult<AuthResponseDto>.Failure("Invalid username or password.");

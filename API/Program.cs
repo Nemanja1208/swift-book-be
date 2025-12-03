@@ -24,6 +24,22 @@ namespace API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // Add CORS configuration for frontend integration
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins(
+                        "http://localhost:5173",  // Vite default dev server
+                        "http://localhost:8080",  // Alternative React dev server
+                        "https://nbihak.netlify.app/landing"  // Production domain (update as needed)
+                    )
+                    .AllowCredentials()           // Required for HttpOnly cookies
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+                });
+            });
+
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
 
@@ -39,6 +55,9 @@ namespace API
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseHttpsRedirection();
+
+            // Enable CORS (must be before Authentication/Authorization)
+            app.UseCors("AllowFrontend");
 
             app.UseAuthentication();
 
