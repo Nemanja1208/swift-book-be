@@ -22,7 +22,7 @@ namespace Infrastructure
                 configuration.GetSection("JwtSettings")
             );
 
-            var connectionString = configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")
+            var connectionString = configuration.GetConnectionString("SQLAZURECONNSTR_AZURE_SQL_CONNECTIONSTRING")
             ?? configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException(
                 "No database connection string found. " +
