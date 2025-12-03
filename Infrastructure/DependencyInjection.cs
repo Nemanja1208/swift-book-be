@@ -22,24 +22,8 @@ namespace Infrastructure
                 configuration.GetSection("JwtSettings")
             );
 
-            string connectionString;
+            var connectionString = configuration.GetConnectionString("SQLAZURECONNSTR_NBI_TEST_DB") ?? configuration.GetConnectionString("DefaultConnection");
 
-            if (env.IsDevelopment())
-            {
-                // local DB from appsettings.Development.json
-                connectionString = configuration.GetConnectionString("DefaultConnection")!;
-            }
-            else
-            {
-                // prod DB from App Settings env var 
-                connectionString = configuration.GetConnectionString("SQLAZURECONNSTR_NEMOSTRING")!;
-            }
-
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new InvalidOperationException(
-                    $"Database connection string not configured for environment '{env.EnvironmentName}'");
-            }
 
 
             services.AddScoped<IAuthService, AuthService>();
