@@ -11,21 +11,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IHostEnvironment env)
         {
             services.Configure<JwtSettings>(
                 configuration.GetSection("JwtSettings")
             );
 
-            var connectionString =
-            configuration["AZURE_SQL_DB_CONNECTION_STRING"]
-            ?? configuration.GetConnectionString("DefaultConnection") // optional fallback
-            ?? throw new InvalidOperationException("Database connection string not configured");
+            var connectionString = env.IsDevelopment()
+            ? configuration.GetConnectionString("DefaultConnection")
+            : configuration.GetConnectionString("AZURE_SQL_DB_CONNECTION_STRING");
 
 
             services.AddScoped<IAuthService, AuthService>();
