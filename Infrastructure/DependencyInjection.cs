@@ -32,7 +32,7 @@ namespace Infrastructure
             else
             {
                 // Azure DB from App Settings (env var)
-                connectionString = configuration["AZURE_SQL_CONNECTIONSTRING"]!;
+                connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")!;
             }
 
             if (string.IsNullOrWhiteSpace(connectionString))
