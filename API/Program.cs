@@ -1,8 +1,8 @@
-
 using API.Helpers;
 using API.Middleware;
 using Application;
 using Infrastructure;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Logging.AzureAppServices;
 
 namespace API
@@ -27,19 +27,18 @@ namespace API
 
             builder.Logging.AddAzureWebAppDiagnostics();
 
-            // Add CORS configuration for frontend integration
+            // Get CORS origins from configuration or use defaults
+            var corsOrigins = builder.Configuration.GetSection("CorsOrigins").Get<string[]>()
+                ?? new[] { "http://localhost:5173", "http://localhost:8080", "https://nbihak.netlify.app" };
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins(
-                        "http://localhost:5173",  // Vite default dev server
-                        "http://localhost:8080",  // Alternative React dev server
-                        "https://nbihak.netlify.app"  // Production domain
-                    )
-                    .AllowCredentials()           // Required for HttpOnly cookies
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    policy.WithOrigins(corsOrigins)
+                        .AllowCredentials()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                 });
             });
 
@@ -48,12 +47,26 @@ namespace API
 
             var app = builder.Build();
 
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            // Configure forwarded headers for Azure (handles X-Forwarded-* headers from load balancer)
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
+            // Only enable Swagger in Development
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-            app.UseHttpsRedirection();
+            // Only redirect to HTTPS in development (Azure handles HTTPS at the edge)
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
 
             // Enable CORS (must be before Authentication/Authorization)
             app.UseCors("AllowFrontend");
