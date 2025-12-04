@@ -32,7 +32,10 @@ namespace Infrastructure
             logger.LogInformation("Environment: {Env}", env.EnvironmentName);
             logger.LogInformation("IsDevelopment: {IsDev}", env.IsDevelopment());
     
+            // Azure SQLAzure connection strings are prefixed with SQLAZURECONNSTR_
+            // Try the standard way first, then fall back to Azure's environment variable
             var connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? Environment.GetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection")
                 ?? throw new InvalidOperationException($"Connection string 'DefaultConnection' not found for environment '{env.EnvironmentName}'");
 
             logger.LogInformation("DefaultConnection exists: {Exists}", !string.IsNullOrEmpty(connectionString));

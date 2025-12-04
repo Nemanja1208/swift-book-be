@@ -35,7 +35,7 @@ namespace API
                     policy.WithOrigins(
                         "http://localhost:5173",  // Vite default dev server
                         "http://localhost:8080",  // Alternative React dev server
-                        "https://nbihak.netlify.app/landing"  // Production domain (update as needed)
+                        "https://nbihak.netlify.app"  // Production domain
                     )
                     .AllowCredentials()           // Required for HttpOnly cookies
                     .AllowAnyHeader()
