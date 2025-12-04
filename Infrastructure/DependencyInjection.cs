@@ -22,25 +22,31 @@ namespace Infrastructure
                 configuration.GetSection("JwtSettings")
             );
 
-            string connectionString;
+            using var loggerFactory = LoggerFactory.Create(builder => 
+            {
+                builder.AddConsole();
+                builder.AddAzureWebAppDiagnostics(); // Writes to Azure logs
+            });
+            var logger = loggerFactory.CreateLogger("Infrastructure.Startup");
+    
+            logger.LogInformation("Environment: {Env}", env.EnvironmentName);
+            logger.LogInformation("IsDevelopment: {IsDev}", env.IsDevelopment());
+    
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            logger.LogInformation("DefaultConnection exists: {Exists}", !string.IsNullOrEmpty(connectionString));
+    
+            // Don't log the actual connection string in production! (contains password)
+            // But you can log a masked version:
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                var server = connectionString.Split(';')
+                    .FirstOrDefault(s => s.StartsWith("Server=", StringComparison.OrdinalIgnoreCase));
+                logger.LogInformation("Server: {Server}", server ?? "not found");
+            }
 
-            if (env.IsDevelopment())
-            {
-                // Local DB from appsettings.Development.json
-                connectionString = configuration.GetConnectionString("DefaultConnection")!;
-            }
-            else
-            {
-                // Azure DB from App Settings - Azure exposes app settings through IConfiguration
-                connectionString = configuration["AZURE_SQL_CONNECTIONSTRING"]
-                    ?? configuration.GetConnectionString("DefaultConnection")!;
-            }
+            var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException(
+            $"Connection string 'DefaultConnection' not found for environment '{env.EnvironmentName}'");
 
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new InvalidOperationException(
-                    $"Database connection string not configured for environment '{env.EnvironmentName}'");
-            }
 
 
             services.AddScoped<IAuthService, AuthService>();
