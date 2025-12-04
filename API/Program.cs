@@ -3,6 +3,7 @@ using API.Helpers;
 using API.Middleware;
 using Application;
 using Infrastructure;
+using Microsoft.Extensions.Logging.AzureAppServices;
 
 namespace API
 {
@@ -23,6 +24,8 @@ namespace API
             builder.Services.AddCustomValidationResponse();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Logging.AddAzureWebAppDiagnostics();
 
             // Add CORS configuration for frontend integration
             builder.Services.AddCors(options =>
