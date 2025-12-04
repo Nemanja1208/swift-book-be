@@ -31,8 +31,9 @@ namespace Infrastructure
             }
             else
             {
-                // Azure DB from App Settings (env var)
-                connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")!;
+                // Azure DB from App Settings - Azure exposes app settings through IConfiguration
+                connectionString = configuration["AZURE_SQL_CONNECTIONSTRING"]
+                    ?? configuration.GetConnectionString("DefaultConnection")!;
             }
 
             if (string.IsNullOrWhiteSpace(connectionString))
