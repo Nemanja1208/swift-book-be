@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure
 {
@@ -22,30 +23,25 @@ namespace Infrastructure
                 configuration.GetSection("JwtSettings")
             );
 
-            using var loggerFactory = LoggerFactory.Create(builder => 
+            using var loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
-                builder.AddAzureWebAppDiagnostics(); // Writes to Azure logs
             });
             var logger = loggerFactory.CreateLogger("Infrastructure.Startup");
     
             logger.LogInformation("Environment: {Env}", env.EnvironmentName);
             logger.LogInformation("IsDevelopment: {IsDev}", env.IsDevelopment());
     
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException($"Connection string 'DefaultConnection' not found for environment '{env.EnvironmentName}'");
+
             logger.LogInformation("DefaultConnection exists: {Exists}", !string.IsNullOrEmpty(connectionString));
-    
+
             // Don't log the actual connection string in production! (contains password)
             // But you can log a masked version:
-            if (!string.IsNullOrEmpty(connectionString))
-            {
-                var server = connectionString.Split(';')
-                    .FirstOrDefault(s => s.StartsWith("Server=", StringComparison.OrdinalIgnoreCase));
-                logger.LogInformation("Server: {Server}", server ?? "not found");
-            }
-
-            var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException(
-            $"Connection string 'DefaultConnection' not found for environment '{env.EnvironmentName}'");
+            var server = connectionString.Split(';')
+                .FirstOrDefault(s => s.StartsWith("Server=", StringComparison.OrdinalIgnoreCase));
+            logger.LogInformation("Server: {Server}", server ?? "not found");
 
 
 
